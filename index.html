@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ray-Ban Rummy Counter</title>
+    <title>Rummy Count - Table-Side Utility</title>
     <style>
         * {
             margin: 0;
@@ -12,234 +12,393 @@
         }
 
         body {
-            width: 600px;
-            height: 600px;
             background: #0a0a0a;
-            font-family: 'Courier New', monospace;
             color: #00ff00;
+            font-family: 'Courier New', monospace;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 100vw;
+            height: 100vh;
         }
 
         #viewport {
-            width: 600px;
-            height: 600px;
-            background: #0a0a0a;
-            position: relative;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 8px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            padding: 12px;
+            box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1);
         }
 
+        /* HEADER */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             border-bottom: 2px solid #00ff00;
-            padding-bottom: 4px;
+            padding-bottom: 8px;
         }
 
-        .deck-counter {
+        .header-left {
             display: flex;
-            gap: 4px;
             align-items: center;
+            gap: 8px;
         }
 
-        .deck-btn {
-            width: 24px;
-            height: 24px;
-            background: #1a1a1a;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-            cursor: pointer;
+        .logo {
+            background: #00ff00;
+            color: #0a0a0a;
+            padding: 4px 8px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            transition: all 0.2s;
+            font-size: 11px;
         }
 
-        .deck-btn:hover, .deck-btn:focus {
-            background: #00ff00;
-            color: #0a0a0a;
-            outline: none;
-        }
-
-        .deck-btn.active {
-            background: #00ff00;
-            color: #0a0a0a;
-        }
-
-        .title {
+        .header-title {
             font-size: 12px;
             font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: 9px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .keys-display {
+            border: 1px solid #00ff00;
+            padding: 2px 6px;
+            font-size: 8px;
+            letter-spacing: 1px;
+        }
+
+        /* TOP STATS PANEL */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stat-box {
+            border: 2px solid #00ff00;
+            padding: 8px;
+            background: #0a1a0a;
             text-align: center;
         }
 
-        .mode-selector {
-            display: flex;
-            gap: 4px;
-            justify-content: center;
+        .stat-label {
+            font-size: 9px;
+            color: #00aa00;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
         }
 
-        .mode-btn {
-            padding: 4px 8px;
-            background: #1a1a1a;
-            border: 1px solid #00ff00;
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
             color: #00ff00;
-            cursor: pointer;
+        }
+
+        .stat-subtext {
+            font-size: 8px;
+            color: #00aa00;
+            margin-top: 2px;
+        }
+
+        /* MODE TABS */
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-start;
+        }
+
+        .tab-btn {
+            padding: 6px 12px;
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
             font-size: 10px;
             font-weight: bold;
-            transition: all 0.2s;
+            cursor: pointer;
+            letter-spacing: 1px;
             font-family: 'Courier New', monospace;
+            transition: all 0.2s;
         }
 
-        .mode-btn:hover, .mode-btn:focus {
+        .tab-btn:hover, .tab-btn:focus {
             background: #00ff00;
             color: #0a0a0a;
             outline: none;
         }
 
-        .mode-btn.active {
+        .tab-btn.active {
             background: #00ff00;
             color: #0a0a0a;
         }
 
+        /* MAIN CONTENT */
         .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             flex: 1;
+            min-height: 0;
+        }
+
+        .panel {
+            border: 2px solid #00ff00;
+            background: #0a1a0a;
+            padding: 12px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 4px;
         }
 
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .card-item {
-            background: #1a1a1a;
-            border: 2px solid #00ff00;
-            padding: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
+        .panel-title {
             font-size: 10px;
-            position: relative;
-            min-height: 50px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            color: #00ff00;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 6px;
+        }
+
+        .panel-subtitle {
+            font-size: 8px;
+            color: #00aa00;
+            float: right;
+            margin-top: -20px;
+            letter-spacing: 1px;
+        }
+
+        /* CARD MATRIX */
+        .card-matrix {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .suit-row {
+            display: contents;
+        }
+
+        .card-cell {
+            aspect-ratio: 1;
+            border: 2px solid #00ff00;
+            background: #0a1a0a;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 8px;
+            font-weight: bold;
+            position: relative;
+            min-height: 32px;
         }
 
-        .card-item:hover, .card-item:focus {
+        .card-cell:hover {
             background: #00ff00;
             color: #0a0a0a;
-            outline: none;
-            transform: scale(1.05);
         }
 
-        .card-item.discarded {
+        .card-cell.discarded {
             background: #2a0a0a;
-            border-color: #ff0000;
-            color: #ff6666;
+            border-color: #ff6600;
+            opacity: 0.5;
         }
 
-        .card-item.selected {
+        .card-cell.held {
             background: #0a2a0a;
             border-color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
         }
 
-        .card-name {
+        .card-rank {
+            font-size: 10px;
             font-weight: bold;
         }
 
         .card-suit {
-            font-size: 16px;
+            font-size: 12px;
             margin-top: 2px;
         }
 
-        .hand-input-section {
+        .suit-label {
+            font-size: 8px;
+            color: #00aa00;
+            margin-bottom: 4px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .matrix-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 8px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #00ff00;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .legend-box {
+            width: 12px;
+            height: 12px;
             border: 1px solid #00ff00;
+        }
+
+        .legend-box.d {
+            background: #2a0a0a;
+        }
+
+        .legend-box.h {
+            background: #0a2a0a;
+        }
+
+        /* ACTION PANEL */
+        .action-box {
+            border: 2px solid #00ff00;
             padding: 8px;
             margin-bottom: 8px;
             background: #0a1a0a;
         }
 
-        .input-label {
-            font-size: 10px;
-            margin-bottom: 4px;
+        .action-title {
+            font-size: 9px;
             font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            color: #00ff00;
+        }
+
+        .action-content {
+            font-size: 9px;
+            line-height: 1.4;
+            color: #00ff00;
+        }
+
+        .action-good {
+            color: #00ff00;
+        }
+
+        .action-warning {
+            color: #ffff00;
+        }
+
+        .action-bad {
+            color: #ff6600;
+        }
+
+        .draw-pool {
+            font-size: 9px;
+            margin-bottom: 4px;
+        }
+
+        .card-list {
+            display: flex;
+            gap: 4px;
+            margin: 4px 0;
+        }
+
+        .card-badge {
+            border: 1px solid #00ff00;
+            padding: 2px 4px;
+            font-size: 8px;
+            background: #0a2a0a;
+        }
+
+        .probability {
+            font-size: 8px;
+            color: #00aa00;
+        }
+
+        .hand-input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .hand-input {
-            width: 100%;
             background: #1a1a1a;
             border: 1px solid #00ff00;
             color: #00ff00;
             padding: 4px;
             font-family: 'Courier New', monospace;
-            font-size: 10px;
-            margin-bottom: 4px;
+            font-size: 9px;
         }
 
         .hand-input::placeholder {
             color: #00aa00;
         }
 
-        .analysis-section {
-            border: 1px solid #00ff00;
-            padding: 8px;
-            background: #0a1a0a;
-            font-size: 9px;
-            line-height: 1.4;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .rec-title {
-            font-weight: bold;
-            color: #00ff00;
-            margin-bottom: 4px;
-            border-bottom: 1px solid #00ff00;
-        }
-
-        .rec-item {
-            margin: 2px 0;
-            padding: 2px 4px;
+        .input-btn {
+            padding: 4px 8px;
             background: #1a1a1a;
-        }
-
-        .rec-good {
+            border: 1px solid #00ff00;
             color: #00ff00;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
         }
 
-        .rec-bad {
-            color: #ff6666;
+        .input-btn:hover {
+            background: #00ff00;
+            color: #0a0a0a;
         }
 
-        .rec-neutral {
-            color: #ffff00;
+        .reset-btn {
+            padding: 6px 12px;
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
         }
 
-        .probability {
-            font-size: 8px;
-            color: #00aa00;
-            margin-top: 2px;
+        .reset-btn:hover {
+            background: #ff6600;
+            border-color: #ff6600;
+            color: #0a0a0a;
         }
 
-        /* Scrollbar styling */
+        /* SCROLLBAR */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -250,41 +409,135 @@
 
         ::-webkit-scrollbar-thumb {
             background: #00ff00;
-            border-radius: 2px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00cc00;
+        /* FOOTER */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 2px solid #00ff00;
+            font-size: 8px;
+            color: #00aa00;
+            letter-spacing: 1px;
+        }
+
+        .footer-left {
+            display: flex;
+            gap: 12px;
+        }
+
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pool-status {
+            font-weight: bold;
+            color: #00ff00;
         }
     </style>
 </head>
 <body>
     <div id="viewport">
+        <!-- HEADER -->
         <div class="header">
-            <div class="title">RUMMY COUNTER</div>
-            <div class="deck-counter" id="deckCounter"></div>
-        </div>
-
-        <div class="mode-selector">
-            <button class="mode-btn active" id="modeCards" aria-label="Card tracking mode">CARDS</button>
-            <button class="mode-btn" id="modeHand" aria-label="Hand analysis mode">HAND</button>
-            <button class="mode-btn" id="modeAnalysis" aria-label="Strategy analysis mode">ANALYZE</button>
-        </div>
-
-        <div class="content">
-            <div id="cardsMode" class="card-grid"></div>
-            <div id="handMode" style="display: none;">
-                <div class="hand-input-section">
-                    <div class="input-label">YOUR HAND (comma separated):</div>
-                    <input type="text" id="handInput" class="hand-input" placeholder="e.g., AS,2H,3D,4C,KS" aria-label="Enter your hand">
-                    <button class="mode-btn" id="parseHandBtn" style="width: 100%;">ANALYZE HAND</button>
-                </div>
-                <div id="handAnalysis" class="analysis-section"></div>
+            <div class="header-left">
+                <div class="logo">RC</div>
+                <div class="header-title">TABLE-SIDE UTILITY / 01</div>
+                <div class="header-title" style="margin-left: 20px;">RUMMY COUNT</div>
             </div>
-            <div id="analysisMode" style="display: none;">
-                <div class="analysis-section">
-                    <div id="analysisContent"></div>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>TRACKING LIVE</span>
                 </div>
+                <div class="keys-display">KEYS: TAB / ARROWS / ENTER</div>
+            </div>
+        </div>
+
+        <!-- STATS ROW -->
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-label">DECKS IN PLAY</div>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span id="deckDisplay" class="stat-value">1</span>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <button id="deckUp" style="width: 16px; height: 12px; border: 1px solid #00ff00; background: #0a1a0a; color: #00ff00; cursor: pointer; font-size: 8px;">▲</button>
+                        <button id="deckDown" style="width: 16px; height: 12px; border: 1px solid #00ff00; background: #0a1a0a; color: #00ff00; cursor: pointer; font-size: 8px;">▼</button>
+                    </div>
+                </div>
+                <div class="stat-subtext">/ 10</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">DRAW POOL</div>
+                <div id="poolCount" class="stat-value">52</div>
+                <div class="stat-subtext">cards</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">KNOWN / HELD</div>
+                <div id="knownCount" class="stat-value">0 / 0</div>
+            </div>
+        </div>
+
+        <!-- MODE TABS -->
+        <div class="mode-tabs">
+            <button class="tab-btn active" id="tab01" data-mode="discard">01 / DISCARD LOG</button>
+            <button class="tab-btn" id="tab02" data-mode="hand">02 / MY HAND</button>
+            <button class="reset-btn" id="resetBtn">RESET TABLE</button>
+        </div>
+
+        <!-- CONTENT AREA -->
+        <div class="content">
+            <!-- LEFT: CARD MATRIX -->
+            <div id="matrixPanel" class="panel">
+                <div>
+                    <div class="panel-title">// KNOWN CARD MATRIX</div>
+                    <div class="panel-subtitle">ACTIVATE = DISCARD</div>
+                </div>
+                <div id="cardMatrix"></div>
+                <div class="matrix-legend">
+                    <div class="legend-item">
+                        <div class="legend-box d"></div>
+                        <span>D = discarded</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box h"></div>
+                        <span>H = held</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: ACTION & ANALYSIS -->
+            <div id="actionPanel" class="panel">
+                <div class="panel-title">// NEXT ACTION</div>
+                <div class="panel-subtitle">DETERMINISTIC</div>
+                <div id="actionContent" style="flex: 1; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- HAND MODE PANEL (HIDDEN BY DEFAULT) -->
+        <div id="handPanel" class="panel" style="display: none; flex: 1;">
+            <div class="panel-title">// MY HAND</div>
+            <div class="hand-input-area" style="margin-bottom: 12px;">
+                <input type="text" id="handInput" class="hand-input" placeholder="Enter hand: AS,2H,3D,4C,KS">
+                <button class="input-btn" id="analyzeBtn" style="width: 100%;">ANALYZE HAND</button>
+            </div>
+            <div id="handAnalysisContent" style="flex: 1; overflow-y: auto;"></div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="footer-left">
+                <div class="footer-item">MODEL <span style="color: #00ff00;">RUNS / LINKS / RANKS</span></div>
+            </div>
+            <div class="footer-item">
+                <span class="pool-status">POOL</span>
+                <span id="poolPercent">100%</span>
+                <span>UNSEEN</span>
             </div>
         </div>
     </div>
