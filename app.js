@@ -1,4 +1,4 @@
-// Table-Side Rummy Counter - Professional UI Version
+// Ray-Ban Rummy Counter - Keyboard-Optimized for 600x600 Display
 
 class RummyCounter {
     constructor() {
@@ -7,9 +7,11 @@ class RummyCounter {
         this.heldCards = new Set();
         this.hand = [];
         this.mode = 'discard';
+        this.focusIndex = 0;
         this.suits = ['♠', '♥', '♦', '♣'];
         this.ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
         this.cards = this.generateDeck();
+        this.focusableElements = [];
         this.init();
     }
 
@@ -26,6 +28,7 @@ class RummyCounter {
     init() {
         this.render();
         this.attachEventListeners();
+        this.manageFocus();
     }
 
     // ==================== DECK MANAGEMENT ====================
@@ -33,26 +36,20 @@ class RummyCounter {
         this.deckCount = Math.max(1, Math.min(10, count));
         this.discardedCards.clear();
         this.heldCards.clear();
+        this.hand = [];
+        this.focusIndex = 0;
         this.render();
+        this.manageFocus();
     }
 
     // ==================== CARD MATRIX RENDERING ====================
     renderCardMatrix() {
         const container = document.getElementById('cardMatrix');
         container.innerHTML = '';
+        this.focusableElements = [];
 
         for (let suit of this.suits) {
-            // Suit row header
-            const suitDiv = document.createElement('div');
-            suitDiv.textContent = suit;
-            suitDiv.className = 'suit-label';
-            container.appendChild(suitDiv);
-
-            // Cards in suit
             for (let rank of this.ranks) {
-                const cardKey = `${rank}${suit}`;
-                
-                // Find all instances of this card across decks
                 let discardCount = 0;
                 let holdCount = 0;
                 
@@ -67,22 +64,20 @@ class RummyCounter {
                 if (discardCount > 0) cell.classList.add('discarded');
                 if (holdCount > 0) cell.classList.add('held');
                 
-                cell.setAttribute('data-card', cardKey);
-                cell.setAttribute('tabindex', '0');
-                cell.setAttribute('aria-label', `${rank} of ${this.getSuitName(suit)}`);
+                cell.setAttribute('data-card', `${rank}${suit}`);
+                cell.setAttribute('tabindex', '-1');
 
                 const rankDiv = document.createElement('div');
                 rankDiv.className = 'card-rank';
                 rankDiv.textContent = rank;
 
-                const suitSymDiv = document.createElement('div');
-                suitSymDiv.className = 'card-suit';
-                suitSymDiv.textContent = suit;
+                const suitDiv = document.createElement('div');
+                suitDiv.className = 'card-suit';
+                suitDiv.textContent = suit;
 
                 cell.appendChild(rankDiv);
-                cell.appendChild(suitSymDiv);
+                cell.appendChild(suitDiv);
 
-                cell.addEventListener('click', () => this.toggleCardState(rank, suit));
                 cell.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
@@ -91,6 +86,7 @@ class RummyCounter {
                 });
 
                 container.appendChild(cell);
+                this.focusableElements.push(cell);
             }
         }
 
@@ -98,7 +94,6 @@ class RummyCounter {
     }
 
     toggleCardState(rank, suit) {
-        // Cycle: normal -> discarded -> held -> normal
         let anyStateFound = false;
         for (let deckNum = 0; deckNum < this.deckCount; deckNum++) {
             const cardId = `${deckNum}-${rank}-${suit}`;
@@ -126,6 +121,42 @@ class RummyCounter {
         return names[suit] || suit;
     }
 
+    // ==================== FOCUS MANAGEMENT ====================
+    manageFocus() {
+        // Update focusable elements based on mode
+        if (this.mode === 'discard') {
+            this.focusableElements = Array.from(document.querySelectorAll('.card-cell'));
+        } else if (this.mode === 'hand') {
+            this.focusableElements = [
+                document.getElementById('handInput'),
+                document.getElementById('analyzeBtn')
+            ];
+        }
+
+        if (this.focusableElements.length > 0) {
+            this.focusIndex = Math.min(this.focusIndex, this.focusableElements.length - 1);
+            this.setFocus(this.focusIndex);
+        }
+    }
+
+    setFocus(index) {
+        this.focusableElements.forEach(el => el.setAttribute('tabindex', '-1'));
+        if (this.focusableElements[index]) {
+            this.focusableElements[index].setAttribute('tabindex', '0');
+            this.focusableElements[index].focus();
+        }
+    }
+
+    focusNext() {
+        this.focusIndex = (this.focusIndex + 1) % this.focusableElements.length;
+        this.setFocus(this.focusIndex);
+    }
+
+    focusPrev() {
+        this.focusIndex = (this.focusIndex - 1 + this.focusableElements.length) % this.focusableElements.length;
+        this.setFocus(this.focusIndex);
+    }
+
     // ==================== PROBABILITY ENGINE ====================
     calculateDrawProbability() {
         const totalCards = 52 * this.deckCount;
@@ -135,7 +166,6 @@ class RummyCounter {
         const probabilities = {};
         const cardCounts = {};
 
-        // Count remaining cards by rank
         for (let deckNum = 0; deckNum < this.deckCount; deckNum++) {
             for (let rank of this.ranks) {
                 for (let suit of this.suits) {
@@ -147,7 +177,6 @@ class RummyCounter {
             }
         }
 
-        // Calculate probabilities
         for (let rank of this.ranks) {
             const count = cardCounts[rank] || 0;
             probabilities[rank] = (count / remainingCards) * 100;
@@ -172,7 +201,7 @@ class RummyCounter {
 
         document.getElementById('deckDisplay').textContent = this.deckCount;
         document.getElementById('poolCount').textContent = remainingCards;
-        document.getElementById('knownCount').textContent = `${this.discardedCards.size} / ${this.heldCards.size}`;
+        document.getElementById('knownCount').textContent = this.discardedCards.size;
         document.getElementById('poolPercent').textContent = `${percentRemaining}%`;
     }
 
@@ -182,31 +211,18 @@ class RummyCounter {
         let html = '';
 
         if (topCards.length === 0) {
-            html = '<div class="action-box"><div class="action-content rec-bad">Deck depleted. All cards known.</div></div>';
+            html = '<div class="action-box"><div class="action-content rec-bad">DECK EMPTY</div></div>';
         } else {
             html += '<div class="action-box">';
-            html += '<div class="action-title">ACTION: DRAW STOCK</div>';
-            html += '<div class="action-content rec-good">Pull from draw pile</div>';
-            html += '<div class="probability">Based on modeled game state</div>';
+            html += '<div class="action-title">→ DRAW STOCK</div>';
+            html += '<div class="action-content rec-good">Pull from deck</div>';
             html += '</div>';
 
             html += '<div class="action-box">';
-            html += '<div class="action-title">BEST UNSEEN DRAWS</div>';
-            html += '<div class="probability">P(draw) × gain</div>';
+            html += '<div class="action-title">TOP DRAWS</div>';
             topCards.forEach((card, idx) => {
-                const barWidth = Math.max(20, parseFloat(card.prob) * 2);
-                html += `<div class="action-content" style="margin-top: 6px;">`;
-                html += `<div><span class="action-good">${card.rank}${idx === 0 ? '▬' : '▭'}</span> `;
-                html += `<span style="display: inline-block; width: ${barWidth}px; height: 6px; border: 1px solid #00ff00; vertical-align: middle;"></span> `;
-                html += `<span class="probability">${card.prob}%</span></div>`;
-                html += `</div>`;
+                html += `<div class="action-content"><span class="rec-good">${idx + 1}. ${card.rank}</span> <span class="probability">${card.prob}%</span></div>`;
             });
-            html += '</div>';
-
-            html += '<div class="action-box">';
-            html += '<div class="action-title">OPPONENT ESTIMATE</div>';
-            html += '<div class="probability">LOW SIGNAL</div>';
-            html += '<div class="action-content" style="margin-top: 4px;">Unseen cards not in your hand remain available to the table.</div>';
             html += '</div>';
         }
 
@@ -234,7 +250,7 @@ class RummyCounter {
 
     analyzeHand() {
         if (this.hand.length === 0) {
-            return '<div class="action-box"><div class="action-content rec-bad">Invalid hand format. Use: AS,2H,3D,4C</div></div>';
+            return '<div class="action-box"><div class="action-content rec-bad">Invalid format. Use: AS,2H,3D</div></div>';
         }
 
         let html = '';
@@ -252,32 +268,25 @@ class RummyCounter {
         });
 
         html += '<div class="action-box">';
-        html += '<div class="action-title">HAND ANALYSIS</div>';
-        html += `<div class="action-content">Value: ${handValue} | Cards: ${this.hand.length}</div>`;
+        html += '<div class="action-title">YOUR HAND</div>';
+        html += `<div class="action-content">Value: ${handValue}</div>`;
         html += `<div class="probability">${this.hand.join(', ')}</div>`;
         html += '</div>';
 
         html += '<div class="action-box">';
-        html += '<div class="action-title">DISCARD RECOMMENDATION</div>';
+        html += '<div class="action-title">DISCARD</div>';
         html += `<div class="action-content rec-bad">→ ${discardCandidates[0]}</div>`;
-        html += `<div class="probability">High value, ${probs[discardCandidates[0]]?.toFixed(1) || 0}% remain</div>`;
+        html += `<div class="probability">${probs[discardCandidates[0]]?.toFixed(1) || 0}% in deck</div>`;
         html += '</div>';
 
-        html += '<div class="action-box">';
-        html += '<div class="action-title">DRAW STRATEGY</div>';
-        html += '<div class="action-content rec-good">DRAW STOCK</div>';
-        html += `<div class="probability">Better odds: ${topCards[0]?.rank} (${topCards[0]?.prob}%)</div>`;
-        html += '</div>';
-
-        html += '<div class="action-box">';
-        html += '<div class="action-title">TOP 3 DRAWS</div>';
-        topCards.forEach((card, idx) => {
-            html += `<div class="action-content" style="margin-top: 4px;">`;
-            html += `<span class="action-good">${idx + 1}. ${card.rank}</span> `;
-            html += `<span class="probability">${card.prob}%</span>`;
-            html += `</div>`;
-        });
-        html += '</div>';
+        if (topCards.length > 0) {
+            html += '<div class="action-box">';
+            html += '<div class="action-title">DRAW STOCK</div>';
+            topCards.forEach((card, idx) => {
+                html += `<div class="action-content"><span class="rec-good">${card.rank}</span> <span class="probability">${card.prob}%</span></div>`;
+            });
+            html += '</div>';
+        }
 
         return html;
     }
@@ -292,46 +301,33 @@ class RummyCounter {
     // ==================== MODE SWITCHING ====================
     switchMode(mode) {
         this.mode = mode;
+        this.focusIndex = 0;
         
-        document.getElementById('matrixPanel').style.display = mode === 'discard' ? 'flex' : 'none';
-        document.getElementById('actionPanel').style.display = mode === 'discard' ? 'flex' : 'none';
-        document.getElementById('handPanel').style.display = mode === 'hand' ? 'flex' : 'none';
+        document.getElementById('matrixPanel').classList.toggle('hidden', mode !== 'discard');
+        document.getElementById('actionPanel').classList.toggle('hidden', mode !== 'discard');
+        document.getElementById('handPanel').classList.toggle('hidden', mode !== 'hand');
 
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`tab0${mode === 'discard' ? '1' : '2'}`).classList.add('active');
 
-        if (mode === 'discard') {
-            this.updateActionPanel();
-        }
+        this.manageFocus();
     }
 
     // ==================== EVENT LISTENERS ====================
     attachEventListeners() {
-        document.getElementById('deckUp').addEventListener('click', () => {
-            this.setDeckCount(this.deckCount + 1);
-        });
-
-        document.getElementById('deckDown').addEventListener('click', () => {
-            this.setDeckCount(this.deckCount - 1);
-        });
-
+        // Tab navigation
         document.getElementById('tab01').addEventListener('click', () => this.switchMode('discard'));
         document.getElementById('tab02').addEventListener('click', () => this.switchMode('hand'));
+        document.getElementById('resetBtn').addEventListener('click', () => this.setDeckCount(1));
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            this.discardedCards.clear();
-            this.heldCards.clear();
-            this.hand = [];
-            this.render();
-        });
-
+        // Hand analysis
         document.getElementById('analyzeBtn').addEventListener('click', () => {
             const handStr = document.getElementById('handInput').value;
             if (this.parseHand(handStr)) {
                 document.getElementById('handAnalysisContent').innerHTML = this.analyzeHand();
             } else {
                 document.getElementById('handAnalysisContent').innerHTML = 
-                    '<div class="action-box"><div class="action-content rec-bad">Invalid format. Use: AS,2H,3D,4C,KS</div></div>';
+                    '<div class="action-box"><div class="action-content rec-bad">Invalid format</div></div>';
             }
         });
 
@@ -341,10 +337,42 @@ class RummyCounter {
             }
         });
 
-        // Arrow key navigation
+        // Global keyboard navigation
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowUp' && this.deckCount < 10) this.setDeckCount(this.deckCount + 1);
-            if (e.key === 'ArrowDown' && this.deckCount > 1) this.setDeckCount(this.deckCount - 1);
+            // Arrow Up/Down = Deck count
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                this.setDeckCount(this.deckCount + 1);
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                this.setDeckCount(this.deckCount - 1);
+            }
+
+            // Arrow Left/Right or Tab = Navigate cards/buttons
+            if (e.key === 'ArrowRight' || e.key === 'Tab') {
+                e.preventDefault();
+                this.focusNext();
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'Shift+Tab') {
+                e.preventDefault();
+                this.focusPrev();
+            }
+
+            // Enter = Activate focused element
+            if (e.key === 'Enter') {
+                const focused = document.activeElement;
+                if (focused.classList.contains('card-cell')) {
+                    const card = focused.getAttribute('data-card');
+                    this.toggleCardState(card.slice(0, -1), card.slice(-1));
+                } else if (focused.id === 'analyzeBtn') {
+                    document.getElementById('analyzeBtn').click();
+                } else if (focused.classList.contains('tab-btn')) {
+                    focused.click();
+                } else if (focused.id === 'resetBtn') {
+                    document.getElementById('resetBtn').click();
+                }
+            }
         });
     }
 
