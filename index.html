@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ray-Ban Rummy Counter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 600px;
+            height: 600px;
+            background: #0a0a0a;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #viewport {
+            width: 600px;
+            height: 600px;
+            background: #0a0a0a;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 4px;
+        }
+
+        .deck-counter {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .deck-btn {
+            width: 24px;
+            height: 24px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+
+        .deck-btn:hover, .deck-btn:focus {
+            background: #00ff00;
+            color: #0a0a0a;
+            outline: none;
+        }
+
+        .deck-btn.active {
+            background: #00ff00;
+            color: #0a0a0a;
+        }
+
+        .title {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            padding: 4px 8px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .mode-btn:hover, .mode-btn:focus {
+            background: #00ff00;
+            color: #0a0a0a;
+            outline: none;
+        }
+
+        .mode-btn.active {
+            background: #00ff00;
+            color: #0a0a0a;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .card-item {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 10px;
+            position: relative;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-item:hover, .card-item:focus {
+            background: #00ff00;
+            color: #0a0a0a;
+            outline: none;
+            transform: scale(1.05);
+        }
+
+        .card-item.discarded {
+            background: #2a0a0a;
+            border-color: #ff0000;
+            color: #ff6666;
+        }
+
+        .card-item.selected {
+            background: #0a2a0a;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .card-name {
+            font-weight: bold;
+        }
+
+        .card-suit {
+            font-size: 16px;
+            margin-top: 2px;
+        }
+
+        .hand-input-section {
+            border: 1px solid #00ff00;
+            padding: 8px;
+            margin-bottom: 8px;
+            background: #0a1a0a;
+        }
+
+        .input-label {
+            font-size: 10px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .hand-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .hand-input::placeholder {
+            color: #00aa00;
+        }
+
+        .analysis-section {
+            border: 1px solid #00ff00;
+            padding: 8px;
+            background: #0a1a0a;
+            font-size: 9px;
+            line-height: 1.4;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .rec-title {
+            font-weight: bold;
+            color: #00ff00;
+            margin-bottom: 4px;
+            border-bottom: 1px solid #00ff00;
+        }
+
+        .rec-item {
+            margin: 2px 0;
+            padding: 2px 4px;
+            background: #1a1a1a;
+        }
+
+        .rec-good {
+            color: #00ff00;
+        }
+
+        .rec-bad {
+            color: #ff6666;
+        }
+
+        .rec-neutral {
+            color: #ffff00;
+        }
+
+        .probability {
+            font-size: 8px;
+            color: #00aa00;
+            margin-top: 2px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 2px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewport">
+        <div class="header">
+            <div class="title">RUMMY COUNTER</div>
+            <div class="deck-counter" id="deckCounter"></div>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" id="modeCards" aria-label="Card tracking mode">CARDS</button>
+            <button class="mode-btn" id="modeHand" aria-label="Hand analysis mode">HAND</button>
+            <button class="mode-btn" id="modeAnalysis" aria-label="Strategy analysis mode">ANALYZE</button>
+        </div>
+
+        <div class="content">
+            <div id="cardsMode" class="card-grid"></div>
+            <div id="handMode" style="display: none;">
+                <div class="hand-input-section">
+                    <div class="input-label">YOUR HAND (comma separated):</div>
+                    <input type="text" id="handInput" class="hand-input" placeholder="e.g., AS,2H,3D,4C,KS" aria-label="Enter your hand">
+                    <button class="mode-btn" id="parseHandBtn" style="width: 100%;">ANALYZE HAND</button>
+                </div>
+                <div id="handAnalysis" class="analysis-section"></div>
+            </div>
+            <div id="analysisMode" style="display: none;">
+                <div class="analysis-section">
+                    <div id="analysisContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
