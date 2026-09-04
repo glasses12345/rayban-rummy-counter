@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rummy Count - Table-Side Utility</title>
+    <title>Rummy Count - Ray-Ban Display</title>
     <style>
         * {
             margin: 0;
@@ -11,22 +11,27 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
+            width: 600px;
+            height: 600px;
             background: #0a0a0a;
             color: #00ff00;
             font-family: 'Courier New', monospace;
             overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #viewport {
-            width: 100%;
-            height: 100%;
+            width: 600px;
+            height: 600px;
+            background: #0a0a0a;
             display: flex;
             flex-direction: column;
-            padding: 12px;
+            padding: 8px;
             box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1);
+            overflow: hidden;
         }
 
         /* HEADER */
@@ -34,47 +39,45 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 6px;
             border-bottom: 2px solid #00ff00;
-            padding-bottom: 8px;
+            padding-bottom: 4px;
+            font-size: 9px;
+            flex-shrink: 0;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .logo {
             background: #00ff00;
             color: #0a0a0a;
-            padding: 4px 8px;
+            padding: 2px 4px;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 8px;
+            min-width: 24px;
+            text-align: center;
         }
 
         .header-title {
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 12px;
-            align-items: center;
             font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
 
         .status-indicator {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
+            font-size: 8px;
         }
 
         .status-dot {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
             background: #00ff00;
             border-radius: 50%;
             animation: pulse 1s infinite;
@@ -85,69 +88,65 @@
             50% { opacity: 0.5; }
         }
 
-        .keys-display {
-            border: 1px solid #00ff00;
-            padding: 2px 6px;
-            font-size: 8px;
-            letter-spacing: 1px;
-        }
-
-        /* TOP STATS PANEL */
+        /* TOP STATS */
         .stats-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 6px;
+            flex-shrink: 0;
         }
 
         .stat-box {
-            border: 2px solid #00ff00;
-            padding: 8px;
+            border: 1px solid #00ff00;
+            padding: 4px;
             background: #0a1a0a;
             text-align: center;
+            font-size: 8px;
         }
 
         .stat-label {
-            font-size: 9px;
+            font-size: 7px;
             color: #00aa00;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: 18px;
             font-weight: bold;
             color: #00ff00;
         }
 
         .stat-subtext {
-            font-size: 8px;
+            font-size: 7px;
             color: #00aa00;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         /* MODE TABS */
         .mode-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-            justify-content: flex-start;
+            gap: 4px;
+            margin-bottom: 6px;
+            flex-shrink: 0;
         }
 
         .tab-btn {
-            padding: 6px 12px;
+            padding: 3px 6px;
             background: #1a1a1a;
-            border: 2px solid #00ff00;
+            border: 1px solid #00ff00;
             color: #00ff00;
-            font-size: 10px;
+            font-size: 8px;
             font-weight: bold;
             cursor: pointer;
-            letter-spacing: 1px;
             font-family: 'Courier New', monospace;
             transition: all 0.2s;
+            flex: 1;
+            text-align: center;
         }
 
-        .tab-btn:hover, .tab-btn:focus {
+        .tab-btn:focus {
             background: #00ff00;
             color: #0a0a0a;
             outline: none;
@@ -158,123 +157,130 @@
             color: #0a0a0a;
         }
 
+        .reset-btn {
+            padding: 3px 6px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-size: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:focus {
+            background: #ff6600;
+            border-color: #ff6600;
+            color: #0a0a0a;
+            outline: none;
+        }
+
         /* MAIN CONTENT */
         .content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 6px;
             flex: 1;
             min-height: 0;
+            overflow: hidden;
         }
 
         .panel {
-            border: 2px solid #00ff00;
+            border: 1px solid #00ff00;
             background: #0a1a0a;
-            padding: 12px;
-            overflow-y: auto;
+            padding: 6px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
+            font-size: 8px;
         }
 
         .panel-title {
-            font-size: 10px;
+            font-size: 7px;
             font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 12px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
             color: #00ff00;
             border-bottom: 1px solid #00ff00;
-            padding-bottom: 6px;
-        }
-
-        .panel-subtitle {
-            font-size: 8px;
-            color: #00aa00;
-            float: right;
-            margin-top: -20px;
-            letter-spacing: 1px;
+            padding-bottom: 2px;
+            flex-shrink: 0;
         }
 
         /* CARD MATRIX */
         .card-matrix {
             display: grid;
             grid-template-columns: repeat(13, 1fr);
-            gap: 4px;
-            margin-bottom: 12px;
-        }
-
-        .suit-row {
-            display: contents;
+            gap: 2px;
+            flex: 1;
+            overflow: hidden;
         }
 
         .card-cell {
-            aspect-ratio: 1;
-            border: 2px solid #00ff00;
+            border: 1px solid #00ff00;
             background: #0a1a0a;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 8px;
+            transition: all 0.1s;
+            font-size: 6px;
             font-weight: bold;
+            min-height: 20px;
             position: relative;
-            min-height: 32px;
+            padding: 1px;
         }
 
-        .card-cell:hover {
+        .card-cell:focus {
             background: #00ff00;
             color: #0a0a0a;
+            outline: none;
+            z-index: 10;
         }
 
         .card-cell.discarded {
             background: #2a0a0a;
             border-color: #ff6600;
-            opacity: 0.5;
+            opacity: 0.6;
         }
 
         .card-cell.held {
             background: #0a2a0a;
             border-color: #00ff00;
-            box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+            box-shadow: 0 0 4px rgba(0, 255, 0, 0.5);
         }
 
         .card-rank {
-            font-size: 10px;
+            font-size: 7px;
             font-weight: bold;
+            line-height: 1;
         }
 
         .card-suit {
-            font-size: 12px;
-            margin-top: 2px;
-        }
-
-        .suit-label {
             font-size: 8px;
-            color: #00aa00;
-            margin-bottom: 4px;
-            font-weight: bold;
-            letter-spacing: 1px;
+            line-height: 1;
         }
 
         .matrix-legend {
             display: flex;
-            gap: 12px;
-            font-size: 8px;
-            margin-top: 8px;
-            padding-top: 8px;
+            gap: 6px;
+            font-size: 6px;
+            margin-top: 4px;
+            padding-top: 4px;
             border-top: 1px solid #00ff00;
+            flex-shrink: 0;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
         }
 
         .legend-box {
-            width: 12px;
-            height: 12px;
+            width: 8px;
+            height: 8px;
             border: 1px solid #00ff00;
         }
 
@@ -288,74 +294,70 @@
 
         /* ACTION PANEL */
         .action-box {
-            border: 2px solid #00ff00;
-            padding: 8px;
-            margin-bottom: 8px;
+            border: 1px solid #00ff00;
+            padding: 4px;
+            margin-bottom: 4px;
             background: #0a1a0a;
+            font-size: 7px;
         }
 
         .action-title {
-            font-size: 9px;
+            font-size: 7px;
             font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
             color: #00ff00;
         }
 
         .action-content {
-            font-size: 9px;
-            line-height: 1.4;
+            font-size: 7px;
+            line-height: 1.2;
             color: #00ff00;
         }
 
-        .action-good {
+        .rec-good {
             color: #00ff00;
         }
 
-        .action-warning {
-            color: #ffff00;
-        }
-
-        .action-bad {
+        .rec-bad {
             color: #ff6600;
         }
 
-        .draw-pool {
-            font-size: 9px;
-            margin-bottom: 4px;
-        }
-
-        .card-list {
-            display: flex;
-            gap: 4px;
-            margin: 4px 0;
-        }
-
-        .card-badge {
-            border: 1px solid #00ff00;
-            padding: 2px 4px;
-            font-size: 8px;
-            background: #0a2a0a;
-        }
-
         .probability {
-            font-size: 8px;
+            font-size: 6px;
             color: #00aa00;
+            margin-top: 1px;
         }
 
+        .action-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* HAND MODE */
         .hand-input-area {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
+            margin-bottom: 6px;
+            flex-shrink: 0;
         }
 
         .hand-input {
             background: #1a1a1a;
             border: 1px solid #00ff00;
             color: #00ff00;
-            padding: 4px;
+            padding: 2px;
             font-family: 'Courier New', monospace;
-            font-size: 9px;
+            font-size: 7px;
+            width: 100%;
+        }
+
+        .hand-input:focus {
+            background: #00ff00;
+            color: #0a0a0a;
+            outline: none;
         }
 
         .hand-input::placeholder {
@@ -363,44 +365,33 @@
         }
 
         .input-btn {
-            padding: 4px 8px;
+            padding: 3px 4px;
             background: #1a1a1a;
             border: 1px solid #00ff00;
             color: #00ff00;
-            font-size: 9px;
+            font-size: 7px;
             font-weight: bold;
             cursor: pointer;
             font-family: 'Courier New', monospace;
             transition: all 0.2s;
+            width: 100%;
         }
 
-        .input-btn:hover {
+        .input-btn:focus {
             background: #00ff00;
             color: #0a0a0a;
+            outline: none;
         }
 
-        .reset-btn {
-            padding: 6px 12px;
-            background: #1a1a1a;
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            font-size: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            letter-spacing: 1px;
-            font-family: 'Courier New', monospace;
-            transition: all 0.2s;
-        }
-
-        .reset-btn:hover {
-            background: #ff6600;
-            border-color: #ff6600;
-            color: #0a0a0a;
+        .hand-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         /* SCROLLBAR */
         ::-webkit-scrollbar {
-            width: 4px;
+            width: 2px;
         }
 
         ::-webkit-scrollbar-track {
@@ -416,28 +407,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 12px;
-            padding-top: 8px;
-            border-top: 2px solid #00ff00;
-            font-size: 8px;
+            margin-top: 6px;
+            padding-top: 4px;
+            border-top: 1px solid #00ff00;
+            font-size: 7px;
             color: #00aa00;
-            letter-spacing: 1px;
-        }
-
-        .footer-left {
-            display: flex;
-            gap: 12px;
-        }
-
-        .footer-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            flex-shrink: 0;
         }
 
         .pool-status {
             font-weight: bold;
             color: #00ff00;
+        }
+
+        /* HIDDEN */
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -447,98 +432,79 @@
         <div class="header">
             <div class="header-left">
                 <div class="logo">RC</div>
-                <div class="header-title">TABLE-SIDE UTILITY / 01</div>
-                <div class="header-title" style="margin-left: 20px;">RUMMY COUNT</div>
+                <div class="header-title">RUMMY / 01</div>
             </div>
-            <div class="header-right">
-                <div class="status-indicator">
-                    <div class="status-dot"></div>
-                    <span>TRACKING LIVE</span>
-                </div>
-                <div class="keys-display">KEYS: TAB / ARROWS / ENTER</div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>LIVE</span>
             </div>
         </div>
 
         <!-- STATS ROW -->
         <div class="stats-row">
             <div class="stat-box">
-                <div class="stat-label">DECKS IN PLAY</div>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <span id="deckDisplay" class="stat-value">1</span>
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <button id="deckUp" style="width: 16px; height: 12px; border: 1px solid #00ff00; background: #0a1a0a; color: #00ff00; cursor: pointer; font-size: 8px;">▲</button>
-                        <button id="deckDown" style="width: 16px; height: 12px; border: 1px solid #00ff00; background: #0a1a0a; color: #00ff00; cursor: pointer; font-size: 8px;">▼</button>
-                    </div>
-                </div>
+                <div class="stat-label">DECKS</div>
+                <div id="deckDisplay" class="stat-value">1</div>
                 <div class="stat-subtext">/ 10</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">DRAW POOL</div>
+                <div class="stat-label">POOL</div>
                 <div id="poolCount" class="stat-value">52</div>
                 <div class="stat-subtext">cards</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">KNOWN / HELD</div>
-                <div id="knownCount" class="stat-value">0 / 0</div>
+                <div class="stat-label">KNOWN</div>
+                <div id="knownCount" class="stat-value">0</div>
+                <div class="stat-subtext">disc</div>
             </div>
         </div>
 
         <!-- MODE TABS -->
         <div class="mode-tabs">
-            <button class="tab-btn active" id="tab01" data-mode="discard">01 / DISCARD LOG</button>
-            <button class="tab-btn" id="tab02" data-mode="hand">02 / MY HAND</button>
-            <button class="reset-btn" id="resetBtn">RESET TABLE</button>
+            <button class="tab-btn active" id="tab01" tabindex="0">CARDS</button>
+            <button class="tab-btn" id="tab02" tabindex="0">HAND</button>
+            <button class="reset-btn" id="resetBtn" tabindex="0">RST</button>
         </div>
 
         <!-- CONTENT AREA -->
         <div class="content">
             <!-- LEFT: CARD MATRIX -->
             <div id="matrixPanel" class="panel">
-                <div>
-                    <div class="panel-title">// KNOWN CARD MATRIX</div>
-                    <div class="panel-subtitle">ACTIVATE = DISCARD</div>
-                </div>
-                <div id="cardMatrix"></div>
+                <div class="panel-title">CARD MATRIX</div>
+                <div id="cardMatrix" class="card-matrix"></div>
                 <div class="matrix-legend">
                     <div class="legend-item">
                         <div class="legend-box d"></div>
-                        <span>D = discarded</span>
+                        <span>D</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-box h"></div>
-                        <span>H = held</span>
+                        <span>H</span>
                     </div>
                 </div>
             </div>
 
             <!-- RIGHT: ACTION & ANALYSIS -->
             <div id="actionPanel" class="panel">
-                <div class="panel-title">// NEXT ACTION</div>
-                <div class="panel-subtitle">DETERMINISTIC</div>
-                <div id="actionContent" style="flex: 1; overflow-y: auto;"></div>
+                <div class="panel-title">ACTION</div>
+                <div class="action-scroll" id="actionContent"></div>
             </div>
         </div>
 
-        <!-- HAND MODE PANEL (HIDDEN BY DEFAULT) -->
-        <div id="handPanel" class="panel" style="display: none; flex: 1;">
-            <div class="panel-title">// MY HAND</div>
-            <div class="hand-input-area" style="margin-bottom: 12px;">
-                <input type="text" id="handInput" class="hand-input" placeholder="Enter hand: AS,2H,3D,4C,KS">
-                <button class="input-btn" id="analyzeBtn" style="width: 100%;">ANALYZE HAND</button>
+        <!-- HAND MODE PANEL -->
+        <div id="handPanel" class="panel hidden" style="flex: 1;">
+            <div class="panel-title">MY HAND</div>
+            <div class="hand-input-area">
+                <input type="text" id="handInput" class="hand-input" placeholder="AS,2H,3D" tabindex="0">
+                <button class="input-btn" id="analyzeBtn" tabindex="0">ANALYZE</button>
             </div>
-            <div id="handAnalysisContent" style="flex: 1; overflow-y: auto;"></div>
+            <div class="hand-scroll" id="handAnalysisContent"></div>
         </div>
 
         <!-- FOOTER -->
         <div class="footer">
-            <div class="footer-left">
-                <div class="footer-item">MODEL <span style="color: #00ff00;">RUNS / LINKS / RANKS</span></div>
-            </div>
-            <div class="footer-item">
-                <span class="pool-status">POOL</span>
-                <span id="poolPercent">100%</span>
-                <span>UNSEEN</span>
-            </div>
+            <span>POOL <span class="pool-status" id="poolPercent">100%</span></span>
+            <span>↑↓ DECK | TAB CARD | ENTER ACTION</span>
         </div>
     </div>
 
